@@ -1,42 +1,27 @@
 import os
-from flask import Flask
-from flaskext.mysql import MySQL      # For newer versions of flask-mysql 
-# from flask.ext.mysql import MySQL   # For older versions of flask-mysql
+import logging
+import socket
+from flask import Flask, jsonify
+
+HOST_NAME = os.environ.get('OPENSHIFT_APP_DNS', 'localhost')
+APP_NAME = os.environ.get('OPENSHIFT_APP_NAME', 'flask')
+IP = os.environ.get('OPENSHIFT_PYTHON_IP', '127.0.0.1')
+PORT = int(os.environ.get('OPENSHIFT_PYTHON_PORT', 8080))
+HOME_DIR = os.environ.get('OPENSHIFT_HOMEDIR', os.getcwd())
+
+log = logging.getLogger(__name__)
 app = Flask(__name__)
 
-mysql = MySQL()
-
-mysql_database_host = 'MYSQL_DATABASE_HOST' in os.environ and os.environ['MYSQL_DATABASE_HOST'] or  'localhost'
-
-# MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'db_user'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Passw0rd'
-app.config['MYSQL_DATABASE_DB'] = 'employee_db'
-app.config['MYSQL_DATABASE_HOST'] = mysql_database_host
-mysql.init_app(app)
-
-conn = mysql.connect()
-
-cursor = conn.cursor()
-
-@app.route("/")
-def main():
-    return "Welcome!"
-
-@app.route('/how are you')
+@app.route('/')
 def hello():
-    return 'I am good, how about you?'
+    return jsonify({
+        'host_name': HOST_NAME,
+        'app_name': APP_NAME,
+        'ip': IP,
+        'port': PORT,
+        'home_dir': HOME_DIR,
+        'host': socket.gethostname()
+    })
 
-@app.route('/read from database')
-def read():
-    cursor.execute("SELECT * FROM employees")
-    row = cursor.fetchone()
-    result = []
-    while row is not None:
-      result.append(row[0])
-      row = cursor.fetchone()
-
-    return ",".join(result)
-
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=PORT)
