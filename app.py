@@ -3,7 +3,7 @@ import logging
 import socket
 from flask import Flask, jsonify
 
-HOST_NAME = os.environ.get('OPENSHIFT_APP_DNS', 'localhost')
+HOST_NAME = os.environ.get()
 APP_NAME = os.environ.get('OPENSHIFT_APP_NAME', 'flask')
 IP = os.environ.get('OPENSHIFT_PYTHON_IP', '127.0.0.1')
 PORT = int(os.environ.get('OPENSHIFT_PYTHON_PORT', 8080))
