@@ -1,22 +1,27 @@
-'''
-Created on 04-Sep-2019
-@author: bkadambi
-'''
+import os
+import logging
+import socket
+from flask import Flask, jsonify
 
-# -*- coding: UTF-8 -*-
-"""
-hello_flask: First Python-Flask webapp
-"""
-from flask import Flask  # From module flask import class Flask
-app = Flask(__name__)    # Construct an instance of Flask class for our webapp
+HOST_NAME = os.environ.get('OPENSHIFT_APP_DNS', 'localhost')
+APP_NAME = os.environ.get('OPENSHIFT_APP_NAME', 'flask')
+IP = os.environ.get('OPENSHIFT_PYTHON_IP', '127.0.0.1')
+PORT = int(os.environ.get('OPENSHIFT_PYTHON_PORT', 8080))
+HOME_DIR = os.environ.get('OPENSHIFT_HOMEDIR', os.getcwd())
 
-@app.route('/')   # URL '/' to be handled by main() route handler
-def main():
-    """Say hello"""
-    return 'Hello, world!'
+log = logging.getLogger(__name__)
+app = Flask(__name__)
 
-if __name__ == '__main__':  # Script executed directly?
-    print("Hello World! Built with a Docker file.")
-    app.run(host="0.0.0.0", port=5000, debug=True,use_reloader=True)  # Launch built-in web server and run this Flask webapp
+@app.route('/')
+def hello():
+    return jsonify({
+        'host_name': HOST_NAME,
+        'app_name': APP_NAME,
+        'ip': IP,
+        'port': PORT,
+        'home_dir': HOME_DIR,
+        'host': socket.gethostname()
+    })
 
-    
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=PORT)
